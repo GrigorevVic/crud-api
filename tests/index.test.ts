@@ -1,6 +1,5 @@
-// __tests__/server.test.js
 import request from "supertest";
-import server from "../src/index.ts"; // Импортируем ваше приложение
+import server from "../src/index.ts";
 
 const user = {
   id: 1,
@@ -15,16 +14,6 @@ const updateUser = {
   age: "40",
   hobbies: ["Hunting", "music"],
 };
-
-/*
-{
-  "username": "Max",
-  "age": "20",
-  "hobbies": ["Hunting", "music"]
-}
-
-
-*/
 
 describe("/api/users", () => {
   test("an empty array is expected", async () => {

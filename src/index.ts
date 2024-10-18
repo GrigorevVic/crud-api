@@ -12,33 +12,33 @@ interface User {
 const users: User[] = [];
 let id = 1;
 
-const server = createServer(async (req, res) => {
-  const { method, url } = req;
-  res.setHeader("Content-Type", "application/json");
+const server = createServer(async (request, response) => {
+  const { method, url } = request;
+  response.setHeader("Content-Type", "application/json");
   if (url) {
     // GET
     if (method === "GET" && url === "/api/users") {
-      res.writeHead(200);
-      res.end(JSON.stringify(users));
+      response.writeHead(200);
+      response.end(JSON.stringify(users));
 
       // GET{id}
     } else if (method === "GET" && url.startsWith("/api/users")) {
       const userId = Number(url.split("/").at(-1));
       const user = users.find((user) => Number(user.id) === userId);
       if (user) {
-        res.writeHead(200);
-        res.end(JSON.stringify(user));
+        response.writeHead(200);
+        response.end(JSON.stringify(user));
       } else {
-        res.writeHead(404);
-        res.end(JSON.stringify({ message: "user not found" }));
+        response.writeHead(404);
+        response.end(JSON.stringify({ message: "user not found" }));
       }
 
       // POST
     } else if (method === "POST" && url === "/api/users") {
       let body = "";
-      req.on("data", (chunk) => (body += chunk.toString()));
+      request.on("data", (chunk) => (body += chunk.toString()));
 
-      req.on("end", () => {
+      request.on("end", () => {
         const user = JSON.parse(body);
         if (
           user.hasOwnProperty("username") &&
@@ -47,12 +47,12 @@ const server = createServer(async (req, res) => {
         ) {
           user.id = id++;
           users.push(user);
-          res.writeHead(201);
-          res.end(JSON.stringify(user));
+          response.writeHead(201);
+          response.end(JSON.stringify(user));
         } else {
-          res.writeHead(400);
-          res.end(
-            JSON.stringify({ message: "does not contain all required fields" })
+          response.writeHead(400);
+          response.end(
+            JSON.stringify({ message: "does not contain all requestuired fields" })
           );
         }
         
@@ -62,17 +62,17 @@ const server = createServer(async (req, res) => {
     } else if (method === "PUT" && url.startsWith("/api/users")) {
       const userId = Number(url.split("/").at(-1));
       let body = "";
-      req.on("data", (chunk) => (body += chunk.toString()));
-      req.on("end", () => {
+      request.on("data", (chunk) => (body += chunk.toString()));
+      request.on("end", () => {
         const updatedUser = JSON.parse(body);
         const index = users.findIndex((user) => Number(user.id) === userId);
         if (index !== -1) {
           users[index] = { id: userId, ...updatedUser };
-          res.writeHead(200);
-          res.end(JSON.stringify(users[index]));
+          response.writeHead(200);
+          response.end(JSON.stringify(users[index]));
         } else {
-          res.writeHead(404);
-          res.end(JSON.stringify({ message: "user not found" }));
+          response.writeHead(404);
+          response.end(JSON.stringify({ message: "user not found" }));
         }
       });
 
@@ -82,17 +82,17 @@ const server = createServer(async (req, res) => {
       const index = users.findIndex((user) => Number(user.id) === userId);
       if (index !== -1) {
         users.splice(index, 1);
-        res.writeHead(204);
-        res.end();
+        response.writeHead(204);
+        response.end();
       } else {
-        res.writeHead(404);
-        res.end(JSON.stringify({ message: "user not found" }));
+        response.writeHead(404);
+        response.end(JSON.stringify({ message: "user not found" }));
       }
 
       // 404
     } else {
-      res.writeHead(404);
-      res.end(JSON.stringify({ message: "unknown route" }));
+      response.writeHead(404);
+      response.end(JSON.stringify({ message: "unknown route" }));
     }
   }
 });
