@@ -4,15 +4,16 @@ dotenv.config();
 
 interface User {
   id: String;
-  name: String;
+  username?: String;
+  age?: Number;
+  hobbies?: String[];
 }
 
 const users: User[] = [];
 let id = 1;
 
-
-const server = createServer((req, res) => {
-    const { method, url } = req;
+const server = createServer(async (req, res) => {
+  const { method, url } = req;
   res.setHeader("Content-Type", "application/json");
   if (url) {
     // GET
@@ -21,8 +22,7 @@ const server = createServer((req, res) => {
       res.end(JSON.stringify(users));
 
       // GET{id}
-    } 
-    else if (method === "GET" && url.startsWith("/api/users")) {
+    } else if (method === "GET" && url.startsWith("/api/users")) {
       const userId = Number(url.split("/").at(-1));
       const user = users.find((user) => Number(user.id) === userId);
       if (user) {
@@ -37,12 +37,25 @@ const server = createServer((req, res) => {
     } else if (method === "POST" && url === "/api/users") {
       let body = "";
       req.on("data", (chunk) => (body += chunk.toString()));
+
       req.on("end", () => {
         const user = JSON.parse(body);
-        user.id = id++;
-        users.push(user);
-        res.writeHead(201);
-        res.end(JSON.stringify(user));
+        if (
+          user.hasOwnProperty("username") &&
+          user.hasOwnProperty("age") &&
+          user.hasOwnProperty("hobbies")
+        ) {
+          user.id = id++;
+          users.push(user);
+          res.writeHead(201);
+          res.end(JSON.stringify(user));
+        } else {
+          res.writeHead(400);
+          res.end(
+            JSON.stringify({ message: "does not contain all required fields" })
+          );
+        }
+        
       });
 
       // PUT{id}
@@ -81,11 +94,8 @@ const server = createServer((req, res) => {
       res.writeHead(404);
       res.end(JSON.stringify({ message: "unknown route" }));
     }
-      
   }
 });
-
-
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
